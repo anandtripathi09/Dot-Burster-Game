@@ -7,8 +7,10 @@ import {
   Play, History, LogOut, Upload, CreditCard, Crown 
 } from 'lucide-react';
 
-// ✅ Use environment variable for API URL
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+// Update this to your Render backend URL
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-backend-app-name.onrender.com/api'  // Replace with your actual Render URL
+  : 'http://localhost:3001/api';
 
 const DashboardPage = () => {
   const { user, logout, updateUser } = useAuth();
@@ -149,6 +151,14 @@ const DashboardPage = () => {
     1: { maxPlayers: 3, entryFee: 30, prize: 70, name: 'Quick Battle' },
     2: { maxPlayers: 5, entryFee: 50, prize: 200, name: 'Standard' },
     3: { maxPlayers: 8, entryFee: 80, prize: 540, name: 'Championship' }
+  };
+
+  // Get the base URL for images (without /api)
+  const getImageUrl = (imagePath: string) => {
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://your-backend-app-name.onrender.com'  // Replace with your actual Render URL
+      : 'http://localhost:3001';
+    return `${baseUrl}/uploads/${imagePath}`;
   };
 
   return (
@@ -316,16 +326,16 @@ const DashboardPage = () => {
               </button>
               <button
                 onClick={() => setShowWithdrawModal(true)}
-                disabled={!user || user.walletBalance < 700}
+                disabled={!user || user.walletBalance < 400}
                 className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 <CreditCard className="h-5 w-5" />
                 <span>Withdraw</span>
               </button>
             </div>
-            {user && user.walletBalance < 700 && (
+            {user && user.walletBalance < 400 && (
               <p className="text-yellow-400 text-xs mt-2">
-                Minimum ₹700 required for withdrawal
+                Minimum ₹400 required for withdrawal
               </p>
             )}
           </div>
@@ -393,7 +403,7 @@ const DashboardPage = () => {
             {paymentDetails.qrImage && (
               <div className="mb-4 text-center">
                 <img 
-                  src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${paymentDetails.qrImage}`}
+                  src={getImageUrl(paymentDetails.qrImage)}
                   alt="Payment QR Code"
                   className="w-48 h-48 mx-auto rounded-lg"
                 />
