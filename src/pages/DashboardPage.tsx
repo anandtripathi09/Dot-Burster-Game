@@ -1,5 +1,3 @@
-import React from 'react';
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,7 +7,8 @@ import {
   Play, History, LogOut, Upload, CreditCard, Crown 
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:3001/api';
+// ✅ Use environment variable for API URL
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
 const DashboardPage = () => {
   const { user, logout, updateUser } = useAuth();
@@ -394,7 +393,7 @@ const DashboardPage = () => {
             {paymentDetails.qrImage && (
               <div className="mb-4 text-center">
                 <img 
-                  src={`${API_URL.replace('/api', '')}/uploads/${paymentDetails.qrImage}`}
+                  src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${paymentDetails.qrImage}`}
                   alt="Payment QR Code"
                   className="w-48 h-48 mx-auto rounded-lg"
                 />

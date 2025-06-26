@@ -1,5 +1,3 @@
-import React from 'react';
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -7,7 +5,8 @@ import { useSocket } from '../contexts/SocketContext';
 import { Target, Trophy, Users, Clock, CheckCircle, X } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+// ✅ Use environment variable for API URL
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
 const GamePage = () => {
   const [searchParams] = useSearchParams();

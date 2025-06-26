@@ -23,25 +23,79 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = createServer(app);
 
-// ✅ Allow Vercel frontend + local dev
+// ✅ Comprehensive CORS configuration
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://your-vercel-frontend.vercel.app' // ✅ Replace with your real URL
+  'https://dot-burster-game-tgql.vercel.app',
+  'https://dot-burster-game-tgql.vercel.app/',
+  // Allow all Vercel preview deployments
+  /^https:\/\/.*\.vercel\.app$/
 ];
 
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST'],
-    credentials: true,
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (typeof allowedOrigin === 'string') {
+        return allowedOrigin === origin;
+      } else if (allowedOrigin instanceof RegExp) {
+        return allowedOrigin.test(origin);
+      }
+      return false;
+    });
+    
+    if (isAllowed) {
+      return callback(null, true);
+    }
+    
+    console.log('CORS blocked origin:', origin);
+    callback(new Error('Not allowed by CORS'));
   },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  preflightContinue: false
+};
+
+// ✅ Apply CORS before other middleware
+app.use(cors(corsOptions));
+
+// ✅ Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
+
+// ✅ Add security headers
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers');
+  
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
 });
 
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-}));
+const io = new Server(server, {
+  cors: corsOptions,
+  transports: ['websocket', 'polling'],
+  allowEIO3: true
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -63,7 +117,21 @@ app.use('/api/payment', paymentRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    cors: 'enabled'
+  });
+});
+
+// Test CORS endpoint
+app.get('/api/test-cors', (req, res) => {
+  res.json({
+    message: 'CORS is working!',
+    origin: req.headers.origin,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Game manager
@@ -107,6 +175,8 @@ connectDB();
 
 // ✅ Use dynamic PORT on Render
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌐 CORS enabled for origins:`, allowedOrigins);
+  console.log(`📡 Socket.IO enabled with CORS`);
 });

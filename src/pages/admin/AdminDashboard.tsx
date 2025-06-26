@@ -1,5 +1,3 @@
-import React from 'react';
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
@@ -8,7 +6,8 @@ import {
   Check, X, Upload, Eye, TrendingUp, GamepadIcon 
 } from 'lucide-react';
 
-const API_URL = 'http://localhost:3001/api';
+// ✅ Use environment variable for API URL
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
 const AdminDashboard = () => {
   const { admin, adminLogout } = useAuth();
@@ -247,7 +246,7 @@ const AdminDashboard = () => {
                   </button>
                   {payment.screenshot && (
                     <button
-                      onClick={() => window.open(`${API_URL.replace('/api', '')}/uploads/payments/${payment.screenshot}`, '_blank')}
+                      onClick={() => window.open(`${import.meta.env.VITE_API_BASE_URL}/uploads/payments/${payment.screenshot}`, '_blank')}
                       className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-all"
                     >
                       <Eye className="h-4 w-4" />
@@ -273,7 +272,7 @@ const AdminDashboard = () => {
             <h4 className="text-lg font-bold text-white mb-4">Current Payment Details</h4>
             <div className="flex items-start space-x-6">
               <img 
-                src={`${API_URL.replace('/api', '')}/uploads/${paymentDetails.qrImage}`}
+                src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${paymentDetails.qrImage}`}
                 alt="Current QR Code"
                 className="w-32 h-32 rounded-lg"
               />

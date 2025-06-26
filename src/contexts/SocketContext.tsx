@@ -1,5 +1,3 @@
-import React from 'react';
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from './AuthContext';
@@ -26,7 +24,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     if (user) {
-      const newSocket = io('http://localhost:3001');
+      // ✅ Use environment variable for socket connection
+      const socketUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const newSocket = io(socketUrl);
       
       newSocket.on('connect', () => {
         setIsConnected(true);
