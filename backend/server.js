@@ -30,7 +30,6 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://127.0.0.1:3000',
   'https://dot-burster-game-tgql.vercel.app',
-  'https://dot-burster-game-tgql.vercel.app/',
   // Allow all Vercel preview deployments
   /^https:\/\/.*\.vercel\.app$/
 ];
@@ -170,7 +169,11 @@ const connectDB = async () => {
     console.log('✅ MongoDB connected');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
+    console.log('💡 Make sure MongoDB is running or set MONGODB_URI environment variable');
+    // Don't exit the process in development - let the server run without DB
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
   }
 };
 connectDB();
