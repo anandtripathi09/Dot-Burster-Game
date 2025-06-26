@@ -1,13 +1,11 @@
-import React from 'react';
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('anand.t9903@gmail.com');
+  const [password, setPassword] = useState('Anandbolte@123');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,10 +18,14 @@ const AdminLogin = () => {
     setLoading(true);
     setError('');
 
+    console.log('Attempting admin login with:', { email, password: '***' });
+
     try {
       await adminLogin(email, password);
+      console.log('Admin login successful, navigating to dashboard');
       navigate('/admin/dashboard');
     } catch (error: any) {
+      console.error('Admin login failed:', error);
       setError(error.response?.data?.message || 'Admin login failed');
     } finally {
       setLoading(false);
@@ -55,8 +57,9 @@ const AdminLogin = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm">
-                {error}
+              <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
@@ -113,11 +116,23 @@ const AdminLogin = () => {
             </button>
           </form>
 
-          {/* Footer */}
+          {/* Debug Info */}
           <div className="text-center mt-6">
-            <p className="text-gray-400 text-sm">
-              Default: anand.t9903@gmail.com / Anandbolte@123
-            </p>
+            <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3 text-blue-200 text-sm">
+              <p className="font-medium mb-1">Default Admin Credentials:</p>
+              <p>Email: anand.t9903@gmail.com</p>
+              <p>Password: Anandbolte@123</p>
+            </div>
+          </div>
+
+          {/* Back to Home */}
+          <div className="text-center mt-4">
+            <button
+              onClick={() => navigate('/')}
+              className="text-gray-400 hover:text-white text-sm transition-colors"
+            >
+              ← Back to Home
+            </button>
           </div>
         </div>
       </div>
