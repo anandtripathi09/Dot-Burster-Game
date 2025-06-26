@@ -12,6 +12,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  phone: string;
   walletBalance: number;
   demoPlayed: boolean;
 }
@@ -26,7 +27,7 @@ interface AuthContextType {
   user: User | null;
   admin: Admin | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, phone: string, password: string) => Promise<void>;
   adminLogin: (email: string, password: string) => Promise<void>;
   logout: () => void;
   adminLogout: () => void;
@@ -105,9 +106,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name: string, email: string, phone: string, password: string) => {
     try {
-      const response = await axios.post('/auth/register', { name, email, password });
+      const response = await axios.post('/auth/register', { name, email, phone, password });
       const { token, user: userData } = response.data;
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;

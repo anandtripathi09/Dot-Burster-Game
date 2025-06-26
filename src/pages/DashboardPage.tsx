@@ -316,16 +316,16 @@ const DashboardPage = () => {
               </button>
               <button
                 onClick={() => setShowWithdrawModal(true)}
-                disabled={!user || user.walletBalance < 400}
+                disabled={!user || user.walletBalance < 700}
                 className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 <CreditCard className="h-5 w-5" />
                 <span>Withdraw</span>
               </button>
             </div>
-            {user && user.walletBalance < 400 && (
+            {user && user.walletBalance < 700 && (
               <p className="text-yellow-400 text-xs mt-2">
-                Minimum ₹400 required for withdrawal
+                Minimum ₹700 required for withdrawal
               </p>
             )}
           </div>

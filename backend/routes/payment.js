@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import Payment from '../models/Payment.js';
+import User from '../models/User.js';
 import Admin from '../models/Admin.js';
 import { protect } from '../middleware/auth.js';
 
@@ -63,8 +64,8 @@ router.post('/withdraw', protect, async (req, res) => {
     const { amount, upiId } = req.body;
     const user = req.user;
     
-    if (user.walletBalance < 400) {
-      return res.status(400).json({ message: 'Minimum wallet balance of ₹400 required for withdrawal' });
+    if (user.walletBalance < 700) {
+      return res.status(400).json({ message: 'Minimum wallet balance of ₹700 required for withdrawal' });
     }
     
     if (amount > user.walletBalance) {

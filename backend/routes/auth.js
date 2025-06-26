@@ -9,21 +9,21 @@ const router = express.Router();
 // User Registration
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, phone, password } = req.body;
     
     // Validate input
-    if (!name || !email || !password) {
+    if (!name || !email || !phone || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'User with this email or phone already exists' });
     }
 
     // Create new user
-    const user = new User({ name, email, password });
+    const user = new User({ name, email, phone, password });
     await user.save();
 
     // Generate JWT token
@@ -36,6 +36,7 @@ router.post('/register', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         walletBalance: user.walletBalance,
         demoPlayed: user.demoPlayed
       }
@@ -82,6 +83,7 @@ router.post('/login', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         walletBalance: user.walletBalance,
         demoPlayed: user.demoPlayed
       }
