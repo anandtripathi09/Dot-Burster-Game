@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-// ✅ Use environment variable for base API URL
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+const API_URL = 'http://localhost:3001/api';
 
 // Set default axios configuration
 axios.defaults.baseURL = API_URL;
@@ -12,7 +11,6 @@ interface User {
   id: string;
   name: string;
   email: string;
-  phone: string;
   walletBalance: number;
   demoPlayed: boolean;
 }
@@ -27,7 +25,7 @@ interface AuthContextType {
   user: User | null;
   admin: Admin | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, phone: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
   adminLogin: (email: string, password: string) => Promise<void>;
   logout: () => void;
   adminLogout: () => void;
@@ -57,17 +55,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const adminToken = localStorage.getItem('adminToken');
         
         if (token) {
+          // Set authorization header
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          
           try {
+            // Verify token and get user data
             const response = await axios.get('/auth/profile');
             setUser(response.data);
           } catch (error) {
             console.error('Token verification failed:', error);
+            // Clear invalid token
             localStorage.removeItem('token');
             delete axios.defaults.headers.common['Authorization'];
           }
         } else if (adminToken) {
+          // Set authorization header for admin
           axios.defaults.headers.common['Authorization'] = `Bearer ${adminToken}`;
+          
+          // Set admin data from localStorage
           const adminData = localStorage.getItem('adminData');
           if (adminData) {
             try {
@@ -94,11 +99,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await axios.post('/auth/login', { email, password });
       const { token, user: userData } = response.data;
+      
+      // Store token and set header
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // Clear any admin data
       localStorage.removeItem('adminToken');
       localStorage.removeItem('adminData');
       setAdmin(null);
+      
       setUser(userData);
     } catch (error: any) {
       console.error('Login error:', error);
@@ -106,12 +116,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (name: string, email: string, phone: string, password: string) => {
+  const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await axios.post('/auth/register', { name, email, phone, password });
+      const response = await axios.post('/auth/register', { name, email, password });
       const { token, user: userData } = response.data;
+      
+      // Store token and set header
       localStorage.setItem('token', token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
       setUser(userData);
     } catch (error: any) {
       console.error('Registration error:', error);
@@ -121,16 +134,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const adminLogin = async (email: string, password: string) => {
     try {
+      console.log('AuthContext: Attempting admin login');
       const response = await axios.post('/auth/admin/login', { email, password });
       const { token, admin: adminData } = response.data;
+      
+      console.log('AuthContext: Admin login response received', { token: '***', adminData });
+      
+      // Store admin token and data
       localStorage.setItem('adminToken', token);
       localStorage.setItem('adminData', JSON.stringify(adminData));
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
+      // Clear any user data
       localStorage.removeItem('token');
       setUser(null);
+      
       setAdmin(adminData);
+      console.log('AuthContext: Admin state updated');
     } catch (error: any) {
-      console.error('Admin login error:', error);
+      console.error('AuthContext: Admin login error:', error);
       throw error;
     }
   };
