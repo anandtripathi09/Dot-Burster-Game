@@ -6,8 +6,10 @@ import {
   Check, X, Upload, Eye, TrendingUp, GamepadIcon 
 } from 'lucide-react';
 
-// ✅ Use environment variable for API URL
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+// Update this to your Render backend URL
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-backend-app-name.onrender.com/api'  // Replace with your actual Render URL
+  : 'http://localhost:3001/api';
 
 const AdminDashboard = () => {
   const { admin, adminLogout } = useAuth();
@@ -106,6 +108,14 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Get the base URL for images (without /api)
+  const getImageUrl = (imagePath: string) => {
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://your-backend-app-name.onrender.com'  // Replace with your actual Render URL
+      : 'http://localhost:3001';
+    return `${baseUrl}/uploads/${imagePath}`;
   };
 
   const renderDashboard = () => (
@@ -246,7 +256,7 @@ const AdminDashboard = () => {
                   </button>
                   {payment.screenshot && (
                     <button
-                      onClick={() => window.open(`${import.meta.env.VITE_API_BASE_URL}/uploads/payments/${payment.screenshot}`, '_blank')}
+                      onClick={() => window.open(getImageUrl(`payments/${payment.screenshot}`), '_blank')}
                       className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-all"
                     >
                       <Eye className="h-4 w-4" />
@@ -272,7 +282,7 @@ const AdminDashboard = () => {
             <h4 className="text-lg font-bold text-white mb-4">Current Payment Details</h4>
             <div className="flex items-start space-x-6">
               <img 
-                src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${paymentDetails.qrImage}`}
+                src={getImageUrl(paymentDetails.qrImage)}
                 alt="Current QR Code"
                 className="w-32 h-32 rounded-lg"
               />
