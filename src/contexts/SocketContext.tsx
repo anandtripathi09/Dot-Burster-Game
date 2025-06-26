@@ -24,8 +24,11 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     if (user) {
-      // ✅ Use environment variable for socket connection
-      const socketUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      // Update this to your Render backend URL (without /api)
+      const socketUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://your-backend-app-name.onrender.com'  // Replace with your actual Render URL
+        : 'http://localhost:3001';
+        
       const newSocket = io(socketUrl);
       
       newSocket.on('connect', () => {
