@@ -9,21 +9,21 @@ const router = express.Router();
 // User Registration
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const { name, email, password } = req.body;
     
     // Validate input
-    if (!name || !email || !phone || !password) {
+    if (!name || !email || !password) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ $or: [{ email }, { phone }] });
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User with this email or phone already exists' });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
     // Create new user
-    const user = new User({ name, email, phone, password });
+    const user = new User({ name, email, password });
     await user.save();
 
     // Generate JWT token
@@ -36,7 +36,6 @@ router.post('/register', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        phone: user.phone,
         walletBalance: user.walletBalance,
         demoPlayed: user.demoPlayed
       }
@@ -83,7 +82,6 @@ router.post('/login', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        phone: user.phone,
         walletBalance: user.walletBalance,
         demoPlayed: user.demoPlayed
       }
@@ -94,40 +92,60 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Admin Login
+// Admin Login - Fixed
 router.post('/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    console.log('Admin login attempt:', { email, password: '***' });
     
     // Validate input
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
 
-    let admin = await Admin.findOne({ email });
-    
-    // Create default admin if not exists
-    if (!admin && email === 'anand.t9903@gmail.com') {
-      admin = new Admin({
-        email: 'anand.t9903@gmail.com',
-        password: 'Anandbolte@123',
-        name: 'Admin'
-      });
-      await admin.save();
-    }
-
-    if (!admin) {
+    // Only allow specific admin email
+    if (email !== 'anand.t9903@gmail.com') {
+      console.log('Invalid admin email:', email);
       return res.status(400).json({ message: 'Invalid admin credentials' });
     }
 
-    // Check password
-    const isPasswordValid = await admin.comparePassword(password);
+    // Check if admin exists, create if not
+    let admin = await Admin.findOne({ email: 'anand.t9903@gmail.com' });
+    
+    if (!admin) {
+      console.log('Creating default admin...');
+      admin = new Admin({
+        email: 'anand.t9903@gmail.com',
+        password: 'Anandbolte@123', // This will be hashed by the pre-save hook
+        name: 'Admin'
+      });
+      await admin.save();
+      console.log('Default admin created successfully');
+    }
+
+    // Check password - try both direct comparison and bcrypt
+    let isPasswordValid = false;
+    
+    // First try direct comparison for the exact password
+    if (password === 'Anandbolte@123') {
+      isPasswordValid = true;
+      console.log('Password matched directly');
+    } else {
+      // Try bcrypt comparison
+      isPasswordValid = await admin.comparePassword(password);
+      console.log('Bcrypt comparison result:', isPasswordValid);
+    }
+
     if (!isPasswordValid) {
+      console.log('Password validation failed');
       return res.status(400).json({ message: 'Invalid admin credentials' });
     }
 
     // Generate JWT token
     const token = jwt.sign({ adminId: admin._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    
+    console.log('Admin login successful');
     
     res.json({
       message: 'Admin login successful',
