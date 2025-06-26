@@ -1,9 +1,7 @@
-import React from 'react';
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Target, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Target, Mail, Lock, Eye, EyeOff, Settings } from 'lucide-react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -121,9 +119,19 @@ const LoginPage = () => {
                 Sign up here
               </Link>
             </p>
-            <Link to="/" className="text-gray-400 hover:text-white text-sm mt-2 inline-block transition-colors">
-              ← Back to Home
-            </Link>
+            <div className="flex items-center justify-center space-x-4 mt-4">
+              <Link to="/" className="text-gray-400 hover:text-white text-sm transition-colors">
+                ← Back to Home
+              </Link>
+              <span className="text-gray-600">|</span>
+              <Link 
+                to="/admin/login" 
+                className="text-gray-400 hover:text-red-400 text-sm transition-colors flex items-center space-x-1"
+              >
+                <Settings className="h-4 w-4" />
+                <span>Admin</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
