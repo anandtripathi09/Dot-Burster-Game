@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Target, Zap, Trophy, Shield, Users, Clock } from 'lucide-react';
+import { Target, Zap, Trophy, Shield, Users, Clock, Settings } from 'lucide-react';
 
 const HomePage = () => {
   return (
@@ -21,12 +21,20 @@ const HomePage = () => {
             <Target className="h-8 w-8 text-yellow-400" />
             <h1 className="text-2xl font-bold text-white">Dot Burster</h1>
           </div>
-          <div className="space-x-4">
+          <div className="flex items-center space-x-4">
             <Link to="/login" className="text-white hover:text-yellow-400 transition-colors">
               Login
             </Link>
             <Link to="/register" className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
               Sign Up
+            </Link>
+            {/* Admin Access Button */}
+            <Link 
+              to="/admin/login" 
+              className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+              title="Admin Login"
+            >
+              <Settings className="h-5 w-5" />
             </Link>
           </div>
         </div>
