@@ -14,37 +14,45 @@ import adminRoutes from './routes/admin.js';
 import paymentRoutes from './routes/payment.js';
 import { GameManager } from './utils/gameManager.js';
 
-// ES6 module compatibility
+dotenv.config();
+
+// For ES modules: simulate __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load .env file
-dotenv.config();
-
-// Express setup
 const app = express();
 const server = createServer(app);
 
-// Allowed origins (for CORS)
+// ✅ Allow Vercel frontend + local dev
 const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://dot-burster.vercel.app" // ✅ Your deployed Vercel frontend
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://your-vercel-frontend.vercel.app' // ✅ Replace with your real URL
 ];
 
-// Middleware
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
+
 app.use(cors({
   origin: allowedOrigins,
-  credentials: true
+  credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Upload directory setup
+// Create uploads directories if they don't exist
 const uploadsDir = path.join(__dirname, 'uploads');
-const paymentsDir = path.join(__dirname, 'uploads', 'payments');
+const paymentsDir = path.join(uploadsDir, 'payments');
+
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 if (!fs.existsSync(paymentsDir)) fs.mkdirSync(paymentsDir, { recursive: true });
+
+// Static file serving
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
@@ -58,14 +66,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// Game Manager and Socket.io setup
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST"],
-    credentials: true
-  }
-});
+// Game manager
 const gameManager = new GameManager(io);
 
 // Socket events
@@ -82,39 +83,30 @@ io.on('connection', (socket) => {
   });
 });
 
-// Error handler
+// Global error handler
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
   res.status(500).json({
     message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
   });
 });
 
-// MongoDB connection
+// MongoDB
 const connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/dotburster';
     await mongoose.connect(mongoURI);
-    console.log('MongoDB connected');
+    console.log('✅ MongoDB connected');
   } catch (error) {
-    console.error('MongoDB connection error:', error);
+    console.error('❌ MongoDB connection error:', error);
     process.exit(1);
   }
 };
 connectDB();
 
-// Start server
+// ✅ Use dynamic PORT on Render
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down...');
-  server.close(() => {
-    console.log('Process terminated');
-  });
+  console.log(`🚀 Server running on port ${PORT}`);
 });
