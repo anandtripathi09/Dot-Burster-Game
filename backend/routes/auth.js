@@ -92,12 +92,12 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Admin Login - Fixed
+// Admin Login - Simplified and Fixed
 router.post('/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    console.log('Admin login attempt:', { email, password: '***' });
+    console.log('Admin login attempt for email:', email);
     
     // Validate input
     if (!email || !password) {
@@ -106,40 +106,28 @@ router.post('/admin/login', async (req, res) => {
 
     // Only allow specific admin email
     if (email !== 'anand.t9903@gmail.com') {
-      console.log('Invalid admin email:', email);
+      console.log('Invalid admin email attempted:', email);
       return res.status(400).json({ message: 'Invalid admin credentials' });
     }
 
-    // Check if admin exists, create if not
+    // Check password directly
+    if (password !== 'Anandbolte@123') {
+      console.log('Invalid admin password');
+      return res.status(400).json({ message: 'Invalid admin credentials' });
+    }
+
+    // Find or create admin
     let admin = await Admin.findOne({ email: 'anand.t9903@gmail.com' });
     
     if (!admin) {
-      console.log('Creating default admin...');
+      console.log('Creating admin account...');
       admin = new Admin({
         email: 'anand.t9903@gmail.com',
-        password: 'Anandbolte@123', // This will be hashed by the pre-save hook
+        password: 'Anandbolte@123',
         name: 'Admin'
       });
       await admin.save();
-      console.log('Default admin created successfully');
-    }
-
-    // Check password - try both direct comparison and bcrypt
-    let isPasswordValid = false;
-    
-    // First try direct comparison for the exact password
-    if (password === 'Anandbolte@123') {
-      isPasswordValid = true;
-      console.log('Password matched directly');
-    } else {
-      // Try bcrypt comparison
-      isPasswordValid = await admin.comparePassword(password);
-      console.log('Bcrypt comparison result:', isPasswordValid);
-    }
-
-    if (!isPasswordValid) {
-      console.log('Password validation failed');
-      return res.status(400).json({ message: 'Invalid admin credentials' });
+      console.log('Admin account created');
     }
 
     // Generate JWT token
