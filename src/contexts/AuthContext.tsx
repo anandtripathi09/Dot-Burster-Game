@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+// Update this to your Render backend URL
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-backend-app-name.onrender.com/api'  // Replace with your actual Render URL
+  : 'http://localhost:3001/api';
 
 // Set default axios configuration
 axios.defaults.baseURL = API_URL;
